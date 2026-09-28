@@ -5,5 +5,11 @@
   "author": {
     "name": "Dmitrii Fedorenko"
   },
-  "keywords": ["jj", "jujutsu", "vcs"]
+  "homepage": "https://github.com/c0va23/jj-vcs-agent-plugins",
+  "repository": "https://github.com/c0va23/jj-vcs-agent-plugins",
+  "keywords": [
+    "jj",
+    "jujutsu",
+    "vcs"
+  ]
 }

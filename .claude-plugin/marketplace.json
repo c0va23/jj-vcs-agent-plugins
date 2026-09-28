@@ -1,5 +1,5 @@
 {
-  "name": "jj-vcs-plugin",
+  "name": "jj-vcs-agent-plugins",
   "description": "Plugins that let coding agents use Jujutsu (jj) without friction.",
   "owner": {
     "name": "Dmitrii Fedorenko"

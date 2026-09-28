@@ -1,4 +1,4 @@
-# jj-vcs-plugin
+# jj-vcs-agent-plugins
 
 Lets coding agents use [Jujutsu (jj)](https://jj-vcs.github.io/jj/) without
 getting stuck waiting on an editor or a pager.
@@ -23,8 +23,8 @@ jj.
 The repo is a plugin marketplace:
 
 ```
-/plugin marketplace add /path/to/jj-vcs-plugin
-/plugin install jj-vcs@jj-vcs-plugin
+/plugin marketplace add c0va23/jj-vcs-agent-plugins
+/plugin install jj-vcs@jj-vcs-agent-plugins
 ```
 
 The plugin brings the `jj-vcs` skill and a `SessionStart` hook
@@ -33,14 +33,16 @@ Claude Code sources before every Bash tool command. If you already have a
 personal copy in `~/.claude/skills/jj-vcs`, remove it so the skill is not
 loaded twice.
 
-To try the plugin without installing it: `claude --plugin-dir /path/to/jj-vcs-plugin`.
+To try the plugin from a local clone without installing it:
+`claude --plugin-dir /path/to/jj-vcs-agent-plugins`.
 
 ## OpenCode
 
 ```sh
+git clone https://github.com/c0va23/jj-vcs-agent-plugins ~/src/jj-vcs-agent-plugins
 mkdir -p ~/.config/opencode/plugins ~/.config/opencode/skills
-ln -s /path/to/jj-vcs-plugin/opencode/plugins/jj-env.ts ~/.config/opencode/plugins/
-ln -s /path/to/jj-vcs-plugin/skills/jj-vcs ~/.config/opencode/skills/
+ln -s ~/src/jj-vcs-agent-plugins/opencode/plugins/jj-env.ts ~/.config/opencode/plugins/
+ln -s ~/src/jj-vcs-agent-plugins/skills/jj-vcs ~/.config/opencode/skills/
 ```
 
 The plugin uses the `shell.env` hook, which OpenCode applies to the bash tool,
