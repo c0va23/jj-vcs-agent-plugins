@@ -9,6 +9,11 @@
       "name": "jj-vcs",
       "source": "./",
       "description": "Use Jujutsu (jj) from agents without hanging on editors or pagers."
+    },
+    {
+      "name": "jj-auto-new",
+      "source": "./plugins/jj-auto-new",
+      "description": "Start a new empty jj change when the agent stops with a non-empty one."
     }
   ]
 }

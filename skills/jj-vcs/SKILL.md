@@ -392,6 +392,13 @@ jj op undo                       # undo the last operation
 4. Repeat
 ```
 
+**Check `@` at the start of each turn.** With the jj-auto-new plugin, a
+`jj new` runs when you finish a turn with a non-empty `@`. If you then keep
+working on the previous change, you'll be in a fresh empty `@` on top of it.
+Either run `jj edit @-` before editing, or edit here and fold the result back
+with `jj squash` (add `-u` if both have descriptions). `jj log --limit 3`
+shows where you are.
+
 **Plan commits before coding.** When a task involves logically separate
 changes (app code vs tests, refactor vs feature), write and describe each
 change sequentially. Do NOT mix unrelated changes into one working copy and

@@ -1,10 +1,10 @@
 {
   "name": "jj-vcs-agent-plugins",
   "version": "0.1.0",
-  "description": "OpenCode plugin: jj-vcs skill plus JJ_EDITOR=false / JJ_PAGER=cat for every shell command.",
+  "description": "OpenCode plugins: jj-vcs skill plus JJ_EDITOR=false / JJ_PAGER=cat for every shell command, and an opt-in new jj change when the agent finishes.",
   "type": "module",
   "exports": {
-    "./server": "./opencode/plugins/jj-env.ts"
+    "./server": "./opencode/index.ts"
   },
   "repository": {
     "type": "git",

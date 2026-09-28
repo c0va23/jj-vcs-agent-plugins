@@ -1,0 +1,11 @@
+{
+  "name": "jj-auto-new",
+  "version": "0.1.0",
+  "description": "When the agent stops, start a new empty jj change on top of a non-empty one, so the next task doesn't land in it.",
+  "author": {
+    "name": "Dmitrii Fedorenko"
+  },
+  "homepage": "https://github.com/c0va23/jj-vcs-agent-plugins",
+  "repository": "https://github.com/c0va23/jj-vcs-agent-plugins",
+  "keywords": ["jj", "jujutsu", "vcs"]
+}
