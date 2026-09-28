@@ -38,17 +38,24 @@ To try the plugin from a local clone without installing it:
 
 ## OpenCode
 
+Install from the GitHub repository. Add `-g` to install for all projects:
+
 ```sh
-git clone https://github.com/c0va23/jj-vcs-agent-plugins ~/src/jj-vcs-agent-plugins
-mkdir -p ~/.config/opencode/plugins ~/.config/opencode/skills
-ln -s ~/src/jj-vcs-agent-plugins/opencode/plugins/jj-env.ts ~/.config/opencode/plugins/
-ln -s ~/src/jj-vcs-agent-plugins/skills/jj-vcs ~/.config/opencode/skills/
+opencode plugin git+https://github.com/c0va23/jj-vcs-agent-plugins.git
 ```
 
-The plugin uses the `shell.env` hook, which OpenCode applies to the bash tool,
-`!` commands and PTYs. For a single project, put the files in
-`.opencode/plugins/` and `.opencode/skills/` instead. OpenCode also reads skills
-from `~/.claude/skills`, so skip the skill link if it is already there.
+This adds the repository to the `plugin` list in `opencode.json`. The one
+install brings both parts:
+
+- a `shell.env` hook that OpenCode applies to the bash tool, `!` commands and
+  PTYs;
+- the `jj-vcs` skill, which the plugin adds to `skills.paths`.
+
+OpenCode keeps the installed copy in its cache. Run the same command with
+`--force` to update it.
+
+To use a local clone instead, add
+`"plugin": ["file:///path/to/jj-vcs-agent-plugins"]` to `opencode.json`.
 
 ## Other agents and plain shells
 
