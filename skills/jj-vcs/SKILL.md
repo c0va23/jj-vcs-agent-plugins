@@ -19,6 +19,29 @@ description: >
 jj opens an editor for many commands by default. In a non-interactive agent
 environment this **blocks the process**. Always apply one of these patterns:
 
+### Environment: `JJ_EDITOR=false` and `JJ_PAGER=cat`
+
+Every jj command must run with:
+
+```bash
+export JJ_EDITOR=false   # any command that wants an editor fails immediately
+export JJ_PAGER=cat      # output never waits in a pager
+```
+
+The jj-vcs plugin for Claude Code / OpenCode sets both for every shell
+command. Check with `echo "$JJ_EDITOR $JJ_PAGER"`. If they are not set, set
+them in the environment (devenv/direnv shell) or prefix commands:
+`JJ_EDITOR=false JJ_PAGER=cat jj …`.
+
+- **Use `false`, not `cat`.** With `JJ_EDITOR=cat` jj reads the editor
+  template back as the "edited" message and silently accepts it — e.g. a
+  squash quietly concatenates both descriptions. With `false` jj stops with
+  `Error: Failed to edit description … Editor 'false' exited with exit
+  status: 1`; re-run the command with `-m` / `-u` (see below).
+- `JJ_PAGER` is jj-only, so it doesn't affect other tools. jj only starts
+  a pager when stdout is a terminal. `--no-pager` or
+  `jj config set --repo ui.paginate never` also turn it off.
+
 ### Always pass `-m` or `--stdin` for messages
 
 ```bash
@@ -44,12 +67,18 @@ scratch file (use `.tmp/` if the repo has one, otherwise `/tmp/`) and pipe:
 jj describe --stdin < /tmp/msg.txt
 ```
 
-### Suppress editor on split/squash
+Only `jj describe` supports `--stdin`. `jj squash`, `jj split` and
+`jj commit` take `-m` only. For a long message on those, pass a short `-m`
+(or `-u` for squash), then fix it with `jj describe <id> --stdin`.
 
-```bash
-# Prevent jj split from opening an editor
-JJ_EDITOR=cat jj split path/to/file.dart -m "message for first half"
-```
+### Commands that open an editor unless told not to
+
+| Command | Opens editor when | Non-interactive form |
+|---|---|---|
+| `jj describe`, `jj commit` | no `-m` | `-m "msg"` (describe also `--stdin`) |
+| `jj split <paths>` | no `-m` | `-m "msg for selected part"` |
+| `jj squash` (any form) | source **and** destination both have descriptions | `-m "msg"` or `-u` (keep destination's) |
+| `jj split` / `jj squash` without paths, `-i`, `jj resolve` | always (terminal UI) | pass file paths; never `-i` |
 
 ### Never use interactive flags
 
@@ -119,11 +148,8 @@ jj log
 # Limit output
 jj log --limit 20
 
-# No pager (pipe-safe, good for agents)
-jj log --no-pager
-
 # Full git-style diff in log
-jj log --git --no-pager
+jj log --git
 ```
 
 Change-IDs in the log are short hex strings (e.g. `llrsqkor`). `@` always
@@ -133,16 +159,16 @@ refers to the current working copy; `@-` is its parent; `@--` grandparent.
 
 ```bash
 # Show current working-copy changes
-jj diff --git --no-pager
+jj diff --git
 
 # Show a specific commit's diff (what that commit introduced)
-jj show <change-id> --git --no-pager
+jj show <change-id> --git
 
 # Show last committed change
-jj show @- --git --no-pager
+jj show @- --git
 
 # Show diff between two commits
-jj diff --from <A> --to <B> --git --no-pager
+jj diff --from <A> --to <B> --git
 
 # Summary (stats only — file names + lines changed, fast to scan)
 jj diff --from <A> --to <B> --stat
@@ -152,7 +178,7 @@ jj status
 ```
 
 **LLM-friendly reading pattern:** Use `--stat` first to see which files
-changed, then `jj show <id> --git --no-pager` only for files you need to
+changed, then `jj show <id> --git` only for files you need to
 inspect. Avoids dumping huge diffs into context.
 
 ### 3.4 Editing a commit in the middle of a stack
@@ -200,7 +226,19 @@ jj squash --into <target-change-id> -m "combined message"
 > `-r` and `--into` are mutually exclusive. `-r` always squashes into the
 > **parent** of the specified revision.
 
-Always pass `-m` — without it, jj opens an editor.
+When both the source and the destination have descriptions, jj opens an
+editor to combine them. Always pass one of:
+
+- `-m "combined message"` — set the result's description explicitly
+- `-u` / `--use-destination-message` — keep the destination's description,
+  drop the source's (typical for "fold this fixup into X")
+
+```bash
+jj squash --into <target-change-id> -u
+```
+
+`jj squash` has no `--stdin`. For a long combined message, squash with `-u`,
+then run `jj describe <target> --stdin <<'EOF' … EOF`.
 
 ### 3.7 Splitting a commit
 
@@ -209,7 +247,7 @@ to select what goes into the first commit; the remainder goes into the second.
 
 ```bash
 # Split the current @ by file (non-interactive — safe for agents)
-JJ_EDITOR=cat jj split path/to/a.ts path/to/b.ts -m "message for first part"
+jj split path/to/a.ts path/to/b.ts -m "message for first part"
 # @ now points to the second commit (remaining files)
 jj describe -m "message for second part"
 ```
@@ -230,7 +268,7 @@ the next batch of files each time.
 1. `jj edit <combined-change>`
 2. Manually revert the "B-half" edits inside the shared file (leave B's other
    files in the tree as-is).
-3. `JJ_EDITOR=cat jj split <shared-file> <A-only-files> -m "A's message"`
+3. `jj split <shared-file> <A-only-files> -m "A's message"`
 4. On the resulting second commit, redo the B-half edits inside the shared
    file.
 5. Verify at each step; descendants rebase cleanly because the final file
@@ -377,9 +415,9 @@ interactive mode.
 ## 6. Quick Reference Card
 
 ```
-jj log --no-pager                        list history
-jj show <id> --git --no-pager            show a commit's diff
-jj diff --git --no-pager                 show working-copy diff
+jj log                                   list history
+jj show <id> --git                       show a commit's diff
+jj diff --git                            show working-copy diff
 jj status                                show changed files
 
 jj describe -m "msg"                     name current @
@@ -387,11 +425,11 @@ jj new                                   open fresh @ on top
 jj edit <id>                             check out a commit for editing
 
 jj squash -m "msg"                       fold @ into parent
-jj squash --into <id> -m "msg"           fold @ into any ancestor
-JJ_EDITOR=cat jj split <files> -m "msg" split @ by file (non-interactive)
+jj squash --into <id> -u                 fold @ into any ancestor, keep its message
+jj split <files> -m "msg"                split @ by file (non-interactive)
 
 jj rebase -d <id>                        move @ onto new parent
-jj rebase -s <id> -d <id>               move subtree
+jj rebase -s <id> -d <id>                move subtree
 jj absorb                                scatter @ hunks to ancestors
 
 jj abandon <id>                          remove a commit
@@ -406,7 +444,9 @@ jj op restore <op-id>                    restore any prior state
 | Mistake | Correct pattern |
 |---|---|
 | `jj new -m "msg"` to "commit" edits | `jj describe -m "msg"` then `jj new` |
-| `jj split -i` or `jj squash -i` | use file-path args; set `JJ_EDITOR=cat` |
+| `JJ_EDITOR=cat` to "suppress" the editor | `JJ_EDITOR=false` — fails fast instead of silently accepting the template |
+| `jj split -i` or `jj squash -i` | use file-path args |
+| `jj squash --into X` when both have descriptions | pass `-u` (keep X's message) or `-m "msg"`; for a long message `-u`, then `jj describe X --stdin` |
 | `jj describe -m "msg with `backticks`"` | use `--stdin <<'EOF' … EOF` |
 | `jj squash --into X` when fixes span multiple ancestors | use `jj absorb` |
 | Mixing refactor + feature in one `@` | write and describe them sequentially |
