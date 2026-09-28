@@ -1,0 +1,9 @@
+{
+  "name": "jj-vcs",
+  "version": "0.1.0",
+  "description": "Use Jujutsu (jj) from agents without hanging on editors or pagers: a jj reference skill plus JJ_EDITOR=false / JJ_PAGER=cat for every Bash command.",
+  "author": {
+    "name": "Dmitrii Fedorenko"
+  },
+  "keywords": ["jj", "jujutsu", "vcs"]
+}
